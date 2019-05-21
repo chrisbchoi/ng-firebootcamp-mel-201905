@@ -1,29 +1,17 @@
 import {Company} from './company-list/company';
 import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CompanyService {
-  constructor() {}
+  constructor(private httpClient: HttpClient) {}
 
-  getCompanies(): Company[] {
-    return [
-      {
-        name: 'SSW',
-        phone: 12345,
-        email: 'info@ssw.com',
-      },
-      {
-        name: 'Microsoft',
-        phone: 12344,
-        email: 'info@microsoft.com',
-      },
-      {
-        name: 'Google',
-        phone: 122145,
-        email: 'info@google.com',
-      },
-    ];
+  API_BASE = 'http://firebootcamp-crm-api.azurewebsites.net/api';
+
+  getCompanies(): Observable<Company[]> {
+    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`);
   }
 }
