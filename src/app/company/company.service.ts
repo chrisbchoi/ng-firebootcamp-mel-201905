@@ -1,3 +1,4 @@
+import {environment} from './../../environments/environment.prod';
 import {Company} from './company-list/company';
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
@@ -8,7 +9,6 @@ import {Observable} from 'rxjs';
 })
 export class CompanyService {
   constructor(private httpClient: HttpClient) {}
-
   API_BASE = 'http://firebootcamp-crm-api.azurewebsites.net/api';
 
   getCompanies(): Observable<Company[]> {
