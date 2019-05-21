@@ -11,10 +11,9 @@ export class CompanyService {
   constructor(private httpClient: HttpClient) {}
   // API_BASE = 'http://firebootcamp-crm-api.azurewebsites.net/api';
   API_BASE = environment.API_BASE;
+
   getCompanies(): Observable<Company[]> {
-    return this.httpClient
-      .get<Company[]>(`${this.API_BASE}/company`)
-      .pipe(catchError(this.errorHandler));
+    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`);
   }
 
   private errorHandler(error: Error): Observable<Company[]> {
