@@ -2,6 +2,7 @@ import {Component, OnInit, OnDestroy} from '@angular/core';
 import {CompanyService} from '../company.service';
 import {Observable} from 'rxjs';
 import {Company} from './company';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'fbc-company-list',
@@ -15,5 +16,15 @@ export class CompanyListComponent implements OnInit {
 
   ngOnInit() {
     this.companies$ = this.companySvc.getCompanies();
+  }
+  deleteCompany(company: Company) {
+    const a$: Observable<Company> = this.companySvc.deleteCompany(company);
+    a$.subscribe(c => (this.companies$ = this.companySvc.getCompanies()));
+  }
+
+  getCompanies() {
+    return this.companySvc
+      .getCompanies()
+      .pipe(map(c => c.sort((a, b) => a.name.localeCompare(b.name))));
   }
 }

@@ -3,7 +3,8 @@ import {Company} from './company-list/company';
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {catchError, retry} from 'rxjs/operators';
+import {catchError, retry, tap} from 'rxjs/operators';
+import {errorHandler} from '@angular/platform-browser/src/browser';
 @Injectable({
   providedIn: 'root',
 })
@@ -14,13 +15,29 @@ export class CompanyService {
 
   getCompanies(): Observable<Company[]> {
     return this.httpClient.get<Company[]>(`${this.API_BASE}/company`).pipe(
-      // retry(3),
-      catchError(this.errorHandler),
+      tap(x => console.log('TAP - Service', x)),
+      catchError(e => this.errorHandler<Company[]>(e)),
     );
   }
 
-  private errorHandler(error: Error): Observable<Company[]> {
+  deleteCompany(company: Company): Observable<Company> {
+    console.log('Delete Company', company.id);
+    return this.httpClient
+      .delete<Company>(`${this.API_BASE}/company/${company.id}`)
+      .pipe(
+        // retry(10),
+        tap(c => console.log('HttpClient.delete called')),
+        catchError(this.errorHandling),
+      );
+  }
+  errorHandling(error: Error): Observable<any> {
+    // TODO: Implement proper error handler (Toaster...)
+    console.error('ERROR', error);
+
+    return new Observable();
+  }
+  private errorHandler<T>(error: Error): Observable<T> {
     console.error('implement custom errort handler here', error);
-    return new Observable<Company[]>();
+    return new Observable<T>();
   }
 }
