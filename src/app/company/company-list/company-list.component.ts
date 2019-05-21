@@ -1,7 +1,7 @@
 import {CompanyService} from './../company.service';
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Company} from './company';
-import {tap} from 'rxjs/operators';
+import {tap, takeWhile} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 @Component({
   selector: 'fbc-company-list',
@@ -10,19 +10,20 @@ import {Subscription} from 'rxjs';
 })
 export class CompanyListComponent implements OnInit, OnDestroy {
   constructor(private companySvc: CompanyService) {}
-  sub: Subscription;
+  componentExists = true;
 
   companies: Company[];
   ngOnDestroy(): void {
-    if (this.sub) {
-      this.sub.unsubscribe();
-    }
+    this.componentExists = false;
   }
 
   ngOnInit() {
-    this.sub = this.companySvc
+    this.companySvc
       .getCompanies()
-      .pipe(tap(c => console.log(`Tab got ${c.length} companies`)))
+      .pipe(
+        takeWhile(c => this.componentExists),
+        tap(c => console.log(`Tab got ${c.length} companies`)),
+      )
       .subscribe(
         next => (this.companies = next),
         error => console.error('ERROR', error),
