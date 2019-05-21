@@ -1,3 +1,4 @@
+import {CompanyService} from './../company.service';
 import {Component, OnInit} from '@angular/core';
 import {Company} from './company';
 
@@ -7,25 +8,11 @@ import {Company} from './company';
   styleUrls: ['./company-list.component.scss'],
 })
 export class CompanyListComponent implements OnInit {
-  constructor() {}
+  constructor(private companySvc: CompanyService) {}
 
-  companies: Company[] = [
-    {
-      name: 'SSW',
-      phone: 12345,
-      email: 'info@ssw.com',
-    },
-    {
-      name: 'Microsoft',
-      phone: 12344,
-      email: 'info@microsoft.com',
-    },
-    {
-      name: 'Google',
-      phone: 122145,
-      email: 'info@google.com',
-    },
-  ];
+  companies: Company[];
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.companies = this.companySvc.getCompanies();
+  }
 }
