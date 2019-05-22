@@ -8,9 +8,10 @@ import {CompanyListComponent} from './company/company-list/company-list.componen
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {HttpClientModule} from '@angular/common/http';
 import {CompanyEditComponent} from './company/company-edit/company-edit.component';
+import { CompanyTableComponent } from './company/company-table/company-table.component';
 
 @NgModule({
-  declarations: [AppComponent, CompanyListComponent, CompanyEditComponent],
+  declarations: [AppComponent, CompanyListComponent, CompanyEditComponent, CompanyTableComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
