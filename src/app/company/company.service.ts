@@ -1,59 +1,83 @@
-import { environment } from './../../environments/environment.prod';
-import { Company } from './company-list/company';
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError, retry, tap } from 'rxjs/operators';
-import { errorHandler } from '@angular/platform-browser/src/browser';
+import {Injectable} from '@angular/core';
+
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Observable, BehaviorSubject} from 'rxjs';
+import {environment} from '../../environments/environment';
+import {catchError, retry, tap, delay, timeout} from 'rxjs/operators';
+import {errorHandler} from '@angular/platform-browser/src/browser';
+import {Company} from './company-list/company';
+
 @Injectable({
   providedIn: 'root',
 })
 export class CompanyService {
-  constructor(private httpClient: HttpClient) { }
-  // API_BASE = 'http://firebootcamp-crm-api.azurewebsites.net/api';
+  constructor(private httpClient: HttpClient) {
+    this.loadCompanies();
+  }
+
   API_BASE = environment.API_BASE;
 
+  companies$: BehaviorSubject<Company[]> = new BehaviorSubject<Company[]>([]);
+
+  loadCompanies() {
+    this.httpClient
+      .get<Company[]>(`${this.API_BASE}/company`)
+      .pipe(
+        // retry(10),
+        catchError(e => this.errorHandling<Company[]>(e)),
+      )
+      .subscribe(companies => this.companies$.next(companies));
+  }
+
   getCompanies(): Observable<Company[]> {
-    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`)
+    return this.companies$;
+  }
+
+  deleteCompany(company: Company) {
+    console.log('Delete Company', company.id);
+    this.httpClient
+      .delete<Company>(`${this.API_BASE}/company/${company.id}`)
       .pipe(
         // retry(10),
-        catchError(this.errorHandling),
-      );
+        tap(c => console.log('HttpClient.delete called')),
+        catchError(e => this.errorHandling<Company>(e)),
+      )
+      .subscribe(c => this.loadCompanies());
   }
 
-  deleteCompany(company: Company): Observable<Company> {
-    console.log("Delete Company", company.id);
-    return this.httpClient.delete<Company>(`${this.API_BASE}/company/${company.id}`)
+  addCompany(company: Company) {
+    this.httpClient
+      .post<Company>(`${this.API_BASE}/company`, company, {
+        headers: new HttpHeaders().set('content-type', 'application/json'),
+      })
       .pipe(
-        // retry(10),
-        tap(c => console.log("HttpClient.delete called")),
-        catchError(this.errorHandling),
-      );
+        catchError(e => this.errorHandling<Company>(e)),
+        delay(1000),
+        timeout(5000),
+      )
+      .subscribe(c => this.loadCompanies());
   }
 
-  addCompany(company: Company): Observable<Company> {
-    return this.httpClient.post<Company>(
-      `${this.API_BASE}/company`, company,
-      { headers: new HttpHeaders().set('content-type', 'application/json') }
-    ).pipe(catchError(e => this.errorHandling(e)));
+  getCompany(id: number): Observable<Company> {
+    return this.httpClient
+      .get<Company>(`${this.API_BASE}/company/${id}`)
+      .pipe(catchError(e => this.errorHandling<Company>(e)));
   }
 
-  getCompany(companyId: number): Observable<Company> {
-    return this.httpClient.get<Company>(`${this.API_BASE}/company/${companyId}`)
-      .pipe(catchError(e => this.errorHandling(e)));
+  updateCompany(company: Company) {
+    return this.httpClient
+      .put<Company>(`${this.API_BASE}/company/${company.id}`, company, {
+        headers: new HttpHeaders().set('content-type', 'application/json'),
+      })
+      .pipe(catchError(e => this.errorHandling<Company>(e)))
+      .subscribe(c => this.loadCompanies());
   }
 
-
-  updateCompany(company: Company): Observable<Company> {
-    return this.httpClient.put<Company>(`${this.API_BASE}/company/${company.id}`, company,
-      { headers: new HttpHeaders().set('content-type', 'application/json') }
-    ).pipe(catchError(e => this.errorHandling(e)));
-
-  }
-  errorHandling(error: Error): Observable<any> {
+  // TODO : rename to errorHandlER
+  errorHandling<T>(error: Error): Observable<T> {
     // TODO: Implement proper error handler (Toaster...)
     console.error('ERROR', error);
 
-    return new Observable();
+    return new Observable<T>();
   }
 }
