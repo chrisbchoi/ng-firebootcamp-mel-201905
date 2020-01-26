@@ -1,14 +1,14 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from "@angular/core";
 
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {Observable, BehaviorSubject} from 'rxjs';
-import {environment} from '../../environments/environment';
-import {catchError, retry, tap, delay, timeout} from 'rxjs/operators';
-import {errorHandler} from '@angular/platform-browser/src/browser';
-import {Company} from './company-list/company';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Observable, BehaviorSubject } from "rxjs";
+import { environment } from "../../environments/environment";
+import { catchError, retry, tap, delay, timeout } from "rxjs/operators";
+//import { ErrorHandler } from "@angular/core";
+import { Company } from "./company-list/company";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root"
 })
 export class CompanyService {
   constructor(private httpClient: HttpClient) {
@@ -24,7 +24,7 @@ export class CompanyService {
       .get<Company[]>(`${this.API_BASE}/company`)
       .pipe(
         // retry(10),
-        catchError(e => this.errorHandling<Company[]>(e)),
+        catchError(e => this.errorHandling<Company[]>(e))
       )
       .subscribe(companies => this.companies$.next(companies));
   }
@@ -34,13 +34,13 @@ export class CompanyService {
   }
 
   deleteCompany(company: Company) {
-    console.log('Delete Company', company.id);
+    console.log("Delete Company", company.id);
     this.httpClient
       .delete<Company>(`${this.API_BASE}/company/${company.id}`)
       .pipe(
         // retry(10),
-        tap(c => console.log('HttpClient.delete called')),
-        catchError(e => this.errorHandling<Company>(e)),
+        tap(c => console.log("HttpClient.delete called")),
+        catchError(e => this.errorHandling<Company>(e))
       )
       .subscribe(c => this.loadCompanies());
   }
@@ -48,12 +48,12 @@ export class CompanyService {
   addCompany(company: Company) {
     this.httpClient
       .post<Company>(`${this.API_BASE}/company`, company, {
-        headers: new HttpHeaders().set('content-type', 'application/json'),
+        headers: new HttpHeaders().set("content-type", "application/json")
       })
       .pipe(
         catchError(e => this.errorHandling<Company>(e)),
         delay(1000),
-        timeout(5000),
+        timeout(5000)
       )
       .subscribe(c => this.loadCompanies());
   }
@@ -67,7 +67,7 @@ export class CompanyService {
   updateCompany(company: Company) {
     return this.httpClient
       .put<Company>(`${this.API_BASE}/company/${company.id}`, company, {
-        headers: new HttpHeaders().set('content-type', 'application/json'),
+        headers: new HttpHeaders().set("content-type", "application/json")
       })
       .pipe(catchError(e => this.errorHandling<Company>(e)))
       .subscribe(c => this.loadCompanies());
@@ -76,7 +76,7 @@ export class CompanyService {
   // TODO : rename to errorHandlER
   errorHandling<T>(error: Error): Observable<T> {
     // TODO: Implement proper error handler (Toaster...)
-    console.error('ERROR', error);
+    console.error("ERROR", error);
 
     return new Observable<T>();
   }
